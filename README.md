@@ -57,6 +57,18 @@ GVEDC-Learning-Coordinato-Agent/
 - **存储**: GVEDC (知识图谱)
 - **版本控制**: Git
 
+## GVEDC数据库集成
+
+GVEDC-Learning-Coordinato-Agent 与 GVEDC (Graph-Vector-Encyclopedia-Database-Context) 数据库深度集成，实现了学习成果的持久化存储和高效检索。
+
+**核心特性**：
+- 自动将学习成果保存到 GVEDC 数据库
+- 支持知识的结构化存储和语义检索
+- 实现知识图谱的构建和管理
+
+**GVEDC 项目仓库**：
+- https://github.com/quick123-666/Graph-Vector-Encyclopedia-Database-Context
+
 ## 安装使用
 
 ```bash

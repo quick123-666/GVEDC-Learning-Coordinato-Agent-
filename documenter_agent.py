@@ -1,0 +1,167 @@
+# 文档Agent - 集成记忆系统
+# 负责生成论文和百科文档
+
+import os
+import json
+
+class DocumenterAgent:
+    def __init__(self, project_path, memory_system=None):
+        self.project_path = project_path
+
+        # 使用传入的记忆系统
+        if memory_system:
+            self.memory = memory_system
+        else:
+            from memory_system import AgentMemorySystem
+            self.memory = AgentMemorySystem(project_path)
+
+    def document_paper(self, paper_id, paper_file):
+        """生成文档"""
+        print(f"Documenter documenting Paper {paper_id}: {paper_file}")
+
+        paper_identifier = f"paper-{paper_id}"
+
+        # 获取研究分析结果
+        analysis = self.memory.get_research_analysis(paper_identifier)
+
+        # 生成文档
+        if analysis:
+            result = self._generate_documentation(paper_id, paper_file, analysis)
+        else:
+            result = {
+                'status': 'skipped',
+                'message': 'No analysis found, skipping documentation',
+                'paper_id': paper_id
+            }
+
+        # 保存文档结果到记忆系统
+        progress_id = self.memory.generate_id("progress")
+        self.memory.save_learning_progress(
+            progress_id=progress_id,
+            paper_id=paper_identifier,
+            agent_type='documenter',
+            stage='documentation',
+            status=result.get('status', 'completed'),
+            result=json.dumps(result, ensure_ascii=False)
+        )
+
+        # 保存上下文
+        self.memory.save_context(
+            session_id=f"paper_{paper_id}",
+            context_type="documentation_generation",
+            content=f"完成Paper {paper_id}的文档生成",
+            metadata={"paper_file": paper_file, "status": result.get('status')}
+        )
+
+        return {
+            'paper_id': paper_id,
+            'file': paper_file,
+            'title': f'Paper {paper_id} Documentation',
+            'result': result
+        }
+
+    def _generate_documentation(self, paper_id, paper_file, analysis):
+        """生成文档"""
+        # 获取核心概念
+        core_concepts = analysis.get('core_concepts', [])
+        technical_points = analysis.get('technical_points', [])
+        implementation_details = analysis.get('implementation_details', {})
+
+        # 文档路径
+        docs_dir = os.path.join(self.project_path, 'agent_group', 'other_projects')
+        os.makedirs(docs_dir, exist_ok=True)
+
+        # 生成论文文档
+        paper_doc = self._create_paper_document(paper_id, core_concepts, technical_points, implementation_details)
+        paper_path = os.path.join(docs_dir, f"paper_{paper_id}_documentation.md")
+        with open(paper_path, 'w', encoding='utf-8') as f:
+            f.write(paper_doc)
+
+        # 生成百科文档
+        encyclopedia_doc = self._create_encyclopedia_document(paper_id, core_concepts, technical_points)
+        encyclopedia_path = os.path.join(docs_dir, f"encyclopedia_paper_{paper_id}.md")
+        with open(encyclopedia_path, 'w', encoding='utf-8') as f:
+            f.write(encyclopedia_doc)
+
+        return {
+            'status': 'completed',
+            'paper_doc': paper_path,
+            'encyclopedia_doc': encyclopedia_path,
+            'core_concepts_count': len(core_concepts),
+            'technical_points_count': len(technical_points),
+            'message': f'Documentation generated for Paper {paper_id}'
+        }
+
+    def _create_paper_document(self, paper_id, core_concepts, technical_points, implementation_details):
+        """创建论文文档"""
+        framework = implementation_details.get('framework', 'Unknown')
+        key_code = implementation_details.get('key_code', 'N/A')
+
+        doc = f"""# Paper {paper_id} - Technical Documentation
+
+## Overview
+
+This document provides technical documentation for Paper {paper_id} from the Sutskever 30 Implementations project.
+
+## Core Concepts
+
+"""
+        for i, concept in enumerate(core_concepts, 1):
+            doc += f"{i}. **{concept}**\n"
+
+        doc += "\n## Technical Points\n\n"
+        for i, point in enumerate(technical_points, 1):
+            doc += f"{i}. {point}\n"
+
+        doc += f"""
+## Implementation Details
+
+- **Framework**: {framework}
+- **Key Code**: `{key_code}`
+- **Paper ID**: {paper_id}
+
+## Summary
+
+This paper covers {len(core_concepts)} core concepts and {len(technical_points)} technical points.
+"""
+        return doc
+
+    def _create_encyclopedia_document(self, paper_id, core_concepts, technical_points):
+        """创建百科文档"""
+        doc = f"""# Encyclopedia Entry - Paper {paper_id}
+
+## Core Concepts
+
+"""
+        for concept in core_concepts:
+            doc += f"### {concept}\n\n"
+            doc += f"Refer to Paper {paper_id} for detailed information about {concept}.\n\n"
+
+        doc += "## Related Technical Points\n\n"
+        for point in technical_points:
+            doc += f"- {point}\n"
+
+        doc += f"""
+## Paper Reference
+
+- **Paper Number**: {paper_id}
+- **Total Concepts**: {len(core_concepts)}
+- **Total Technical Points**: {len(technical_points)}
+
+---
+*Generated by Documenter Agent*
+"""
+        return doc
+
+    def get_documentation_status(self, paper_id):
+        """获取文档生成状态"""
+        paper_identifier = f"paper-{paper_id}"
+        progress_records = self.memory.get_learning_progress(paper_identifier)
+
+        # 筛选文档相关的记录
+        documentation_records = [
+            p for p in progress_records
+            if p.get('agent_type') == 'documenter' and p.get('stage') == 'documentation'
+        ]
+
+        return documentation_records[-1] if documentation_records else None

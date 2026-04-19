@@ -18,9 +18,9 @@ def test_researcher():
     paper_file = os.path.join(project_path, "24_machine_super_intelligence.ipynb")
     if os.path.exists(paper_file):
         result = agent.analyze_paper(24, paper_file)
-        print(f"✓ ResearcherAgent test passed: {result['core_concepts'][:3]}...")
+        print(f"[OK] ResearcherAgent test passed: {result['core_concepts'][:3]}...")
     else:
-        print("⚠ Paper 24 file not found, skipping test")
+        print("[WARNING] Paper 24 file not found, skipping test")
 
 def test_implementer():
     print("\nTesting ImplementerAgent...")
@@ -31,9 +31,9 @@ def test_implementer():
     paper_file = os.path.join(project_path, "24_machine_super_intelligence.ipynb")
     if os.path.exists(paper_file):
         result = agent.implement_paper(24, paper_file)
-        print(f"✓ ImplementerAgent test passed: integrity_score={result['code_check']['integrity_score']:.1f}%")
+        print(f"[OK] ImplementerAgent test passed: integrity_score={result['code_check']['integrity_score']:.1f}%")
     else:
-        print("⚠ Paper 24 file not found, skipping test")
+        print("[WARNING] Paper 24 file not found, skipping test")
 
 def test_documenter():
     print("\nTesting DocumenterAgent...")
@@ -44,9 +44,9 @@ def test_documenter():
     paper_file = os.path.join(project_path, "24_machine_super_intelligence.ipynb")
     if os.path.exists(paper_file):
         result = agent.document_paper(24, paper_file)
-        print(f"✓ DocumenterAgent test passed: generated files at {result['paper_path']}")
+        print(f"[OK] DocumenterAgent test passed: generated files at {result['paper_path']}")
     else:
-        print("⚠ Paper 24 file not found, skipping test")
+        print("[WARNING] Paper 24 file not found, skipping test")
 
 def test_coordinator():
     print("\nTesting LearningCoordinator...")
@@ -54,7 +54,7 @@ def test_coordinator():
     coordinator = LearningCoordinator(project_path)
     
     tasks = coordinator.assign_tasks()
-    print(f"✓ LearningCoordinator test passed: assigned {len(tasks)} tasks")
+    print(f"[OK] LearningCoordinator test passed: assigned {len(tasks)} tasks")
 
 def main():
     print("======================================")
